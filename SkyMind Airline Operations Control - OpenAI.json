@@ -1,0 +1,1138 @@
+{
+  "name": "SkyMind Airline Operations Control - OpenAI",
+  "nodes": [
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "bcb18bc5-b26f-42bb-9929-b8d1699c8a4c",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f67366ec-ff21-40a4-83f1-50c1e8055076",
+              "leftValue": "={{ $json.flight.iata }}",
+              "rightValue": "={{ $('When chat message received').first().json.chatInput.match(/\\b(?:[A-Z]{2}|\\d[A-Z])\\d{3,4}\\b/i)[0].toUpperCase() }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        0
+      ],
+      "id": "0c7e296a-0252-41d0-b313-37d135a2e95b",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0e67be3e-f38e-4821-bb84-aa81a9d9c239",
+              "leftValue": "={{ ['scheduled', 'active', 'landed'].includes($json.flight_status) }}",
+              "rightValue": "is true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        528,
+        0
+      ],
+      "id": "0570da5f-6aed-464f-8c01-7e6a7052cc0c",
+      "name": "Filter1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8ae65daa-8611-4850-9675-46e38ed14cd5",
+              "name": "flight_number",
+              "value": "={{ $json.flightNumber }}",
+              "type": "string"
+            },
+            {
+              "id": "aa302759-8a0c-4ab8-a78e-41ff75a1d63c",
+              "name": "status",
+              "value": "={{ $json.status }}",
+              "type": "string"
+            },
+            {
+              "id": "c15b47fb-0a4d-454d-ad54-0b1978f4b7c2",
+              "name": "flight_date",
+              "value": "={{ $json.flightDate }}",
+              "type": "string"
+            },
+            {
+              "id": "e82d8ee1-8544-4565-8c8e-fdad051f0e66",
+              "name": "departure_airport",
+              "value": "={{$json.departure.iata}}",
+              "type": "string"
+            },
+            {
+              "id": "96dab3b8-80d0-4dbd-82eb-f512c1a493bd",
+              "name": "arrival_airport",
+              "value": "={{$json.arrival.iata}}",
+              "type": "string"
+            },
+            {
+              "id": "be7d2636-b227-4337-bbd8-a9044c8810d4",
+              "name": "scheduled_departure",
+              "value": "={{ $json.departure.scheduled }}",
+              "type": "string"
+            },
+            {
+              "id": "a5ec5842-315b-48d9-adbf-246e728de150",
+              "name": "actual_departure",
+              "value": "={{ $json.departure.actual }}",
+              "type": "string"
+            },
+            {
+              "id": "789bfa23-0664-4d1b-a814-db2568da6c9f",
+              "name": "delay_minutes",
+              "value": "={{ $json.departure.delayMinutes }}",
+              "type": "string"
+            },
+            {
+              "id": "a8c9bbe3-04bb-47f0-82cd-29bb25b2f774",
+              "name": "=request_type",
+              "value": "={{ $json.requestType }}",
+              "type": "string"
+            },
+            {
+              "id": "f8b5184c-dbfa-49d9-978b-0ef73703c657",
+              "name": "=user_query",
+              "value": "={{ $json.user_query }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        800,
+        16
+      ],
+      "id": "52f8e35a-1234-4d38-ad3e-44b0844b9227",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1168,
+        560
+      ],
+      "id": "13c235c5-16c8-4f19-8492-76e4168e1015",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "model": "qwen3:4b",
+        "options": {
+          "think": false,
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1312,
+        1408
+      ],
+      "id": "0aad2299-e14d-481f-85ba-ee035add0b74",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "XesXHwSWuK4KJCZe",
+          "name": "Ollama account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "={\n  \"type\": \"object\",\n  \"properties\": {\n    \"flight_number\": {\n      \"type\": \"string\"\n    },\n    \"flight_status\": {\n      \"type\": \"string\"\n    },\n    \"flight_date\": {\n      \"type\": \"string\"\n    },\n    \"delay_minutes\": {\n      \"type\": \"integer\"\n    },\n    \"departure_airport\": {\n      \"type\": \"string\"\n    },\n    \"arrival_airport\": {\n      \"type\": \"string\"\n    },\n    \"operational_issue\": {\n      \"type\": \"string\"\n    },\n    \"recommended_action\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"flight_number\",\n    \"flight_status\",\n    \"flight_date\",\n    \"delay_minutes\",\n    \"departure_airport\",\n    \"arrival_airport\",\n    \"operational_issue\",\n    \"recommended_action\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1184,
+        1344
+      ],
+      "id": "fe8291fa-31a7-42c3-a1cd-823ed8ae950c",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        560
+      ],
+      "id": "04c7b2a3-3890-459a-8894-4a3d02509587",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1824,
+        816
+      ],
+      "id": "dc4cec00-815a-4317-b058-fd8c0fa6861a",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "jlEp02iX0EzvljHh",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"flight_number\": \"string\",\n  \"flight_status\": \"string\",\n  \"flight_date\": \"string\",\n  \"departure_airport\": \"string\",\n  \"arrival_airport\": \"string\",\n  \"scheduled_departure\": \"string\",\n  \"actual_departure\": \"string\",\n  \"delay_minutes\": 0,\n  \"delay_cause\": \"string\",\n  \"weather_impact\": \"string\",\n  \"operational_issue\": \"string\",\n  \"recovery_required\": false,\n  \"recovery_actions\": [\n    \"string\"\n  ],\n  \"passenger_communication_required\": false,\n  \"passenger_message\": \"string\",\n  \"operations_message\": \"string\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        2000,
+        816
+      ],
+      "id": "64daeeba-ee37-438c-9ecb-3033bae468c3",
+      "name": "Structured Output Parser2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b583383e-06d5-437b-9a1e-61953d15eedf",
+              "leftValue": "={{ Number($json.delay_minutes) }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2272,
+        576
+      ],
+      "id": "0597adfd-1486-424d-8316-26ccf8b38fe1",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0c26ca50-322b-49b4-9b8c-fc047910f796",
+              "name": "=delay_severity",
+              "value": "={{ Number($json.delay_minutes) >= 60\n  ? \"CRITICAL\"\n  : Number($json.delay_minutes) >= 30\n    ? \"HIGH\"\n    : \"MODERATE\"\n}}",
+              "type": "string"
+            },
+            {
+              "id": "a3d7fdda-6532-4008-9b7d-a2f46d46b764",
+              "name": "operational_priority",
+              "value": "MEDIUM",
+              "type": "string"
+            },
+            {
+              "id": "e3172604-82af-4c3d-b1a4-87a863152971",
+              "name": "issue_type",
+              "value": "DEPARTURE_DELAY",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        2576,
+        352
+      ],
+      "id": "0c12e077-5c7d-4201-a515-5fddd6450289",
+      "name": "Delay Assessment"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are SkyMind, an Airline Operations Control Agent.\n\nYour role is to analyze flight operational data and recommend the appropriate operational response.\n\nAnalyze the following flight data:\n\n{{ JSON.stringify($json) }}\n\nEvaluate:\n\n1. Flight delay severity\n2. Operational priority\n3. Weather impact\n4. Whether passenger communication is required\n5. Whether airport/ground operations intervention is required\n6. Whether the flight should be monitored further\n7. The most appropriate operational action\n\nDecision rules:\n\n- Delay < 15 minutes:\n  severity = \"MINOR\"\n  priority = \"LOW\"\n\n- Delay 15–29 minutes:\n  severity = \"MODERATE\"\n  priority = \"MEDIUM\"\n\n- Delay 30–59 minutes:\n  severity = \"MAJOR\"\n  priority = \"HIGH\"\n\n- Delay >= 60 minutes:\n  severity = \"CRITICAL\"\n  priority = \"CRITICAL\"\n\nIncrease operational concern when adverse weather is present, especially rain, thunderstorms, strong winds, poor visibility, or other conditions that may affect departure operations.\n\nFor the recommended action:\n- MINOR: continue monitoring.\n- MODERATE: monitor flight and coordinate with ground operations if necessary.\n- MAJOR: coordinate with airport/ground operations and prepare passenger communication.\n- CRITICAL: escalate to the operations control team, coordinate airport/ground operations, and initiate passenger communication.\n\nReturn ONLY the structured output requested by the output parser.\nDo not provide explanations outside the structured output.",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        2816,
+        352
+      ],
+      "id": "bd3efc00-4682-4f8f-8396-05c99157d2ff",
+      "name": "Basic LLM Chain1"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"flight_number\": \"AI2608\",\n  \"delay_severity\": \"MODERATE\",\n  \"operational_priority\": \"MEDIUM\",\n  \"weather_impact\": \"MODERATE\",\n  \"passenger_communication_required\": true,\n  \"ground_operations_required\": true,\n  \"monitoring_required\": true,\n  \"recommended_action\": \"Coordinate with ground operations and monitor the flight for further delay.\",\n  \"escalation_required\": false,\n  \"reason\": \"The flight is delayed by 28 minutes and patchy rain is reported near the departure airport.\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        2640,
+        800
+      ],
+      "id": "8ff429a6-a14e-4801-a6d7-20b60b188155",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2944,
+        800
+      ],
+      "id": "b95cdf11-23bb-4bb0-8d23-6b7a64a295d4",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "jlEp02iX0EzvljHh",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5ca9aadb-5cc5-4693-9690-c991931e5523",
+              "leftValue": "={{ $json.escalation_required }}",
+              "rightValue": "={{ true }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3184,
+        368
+      ],
+      "id": "2456b343-851a-4f38-92f5-a2270f9a8ac8",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are SkyMind, an Airline Operations Control Agent.\n\nYou are handling a flight that does NOT currently require escalation.\n\nAnalyze the operational assessment provided below and determine the appropriate routine operational response.\n\nFocus on:\n1. Flight delay status\n2. Operational priority\n3. Weather impact\n4. Ground operations requirements\n5. Whether passenger communication is currently required\n6. Monitoring requirements\n7. Immediate operational action\n\nDo NOT escalate the situation unless the provided data explicitly indicates escalation is required.\n\nReturn a concise operational recommendation.\n\nFlight operational assessment:\n\n{{ JSON.stringify($json) }}",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        3472,
+        608
+      ],
+      "id": "f35ad75e-ca9e-44ca-8368-d728bdf07c71",
+      "name": "Normal Operations"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"flight_number\": \"AI2608\",\n  \"operational_status\": \"NORMAL_MONITORING\",\n  \"delay_minutes\": 28,\n  \"delay_severity\": \"MODERATE\",\n  \"operational_priority\": \"MEDIUM\",\n  \"ground_operations_required\": true,\n  \"passenger_communication_required\": false,\n  \"monitoring_required\": true,\n  \"recommended_action\": \"Continue active monitoring and coordinate with ground operations.\",\n  \"escalation_required\": false,\n  \"next_review_minutes\": 15\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        3312,
+        880
+      ],
+      "id": "f6d92c42-7606-4193-a040-bda6415d0995",
+      "name": "Structured Output Parser3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are SkyMind, an Airline Operations Control Agent.\n\nThe flight has been classified as requiring escalation.\n\nAnalyze the operational assessment and determine the appropriate escalation response.\n\nEvaluate:\n1. Why escalation is required\n2. Severity of the operational issue\n3. Operational priority\n4. Whether ground operations must be contacted\n5. Whether passenger communication is required\n6. Whether airline operations control intervention is required\n7. What immediate action should be taken\n8. What should be monitored after escalation\n\nDo not invent information that is not present in the flight data.\n\nProvide a clear operational escalation recommendation.\n\nFlight operational assessment:\n\n{{ JSON.stringify($json) }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        3408,
+        304
+      ],
+      "id": "07cc3926-4332-4589-ae65-ce75c93ab77b",
+      "name": "Escalation Assessment"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e83c9796-5125-4bd4-9ddf-8940704c13b3",
+              "leftValue": "={{ String($json.text || '').toLowerCase().includes('escalat') }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3760,
+        304
+      ],
+      "id": "47c86847-0090-4cb1-85cb-b2a9844d94f3",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1JbNfVVSLpuO5dykMbjuwRy_ditE6UHwzcsbp34fCAwI",
+          "mode": "list",
+          "cachedResultName": "Skymind Email ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JbNfVVSLpuO5dykMbjuwRy_ditE6UHwzcsbp34fCAwI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JbNfVVSLpuO5dykMbjuwRy_ditE6UHwzcsbp34fCAwI/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "flight_number",
+              "lookupValue": "={{ $('Recovery Agent').first().json.flight_number || $('Prepare Flight Data').first().json.flight_number }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3984,
+        288
+      ],
+      "id": "b9041521-3a06-4859-88ac-8656f8832a20",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "77UdVhjb3Y6YAoIk",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// SkyMind - Ground Operations Data Preparation\n// ============================================================\n\nconst flightData =\n  $('Prepare Flight Data').first().json || {};\n\nconst recoveryRaw =\n  $('Recovery Agent').first().json || {};\n\nconst weatherData =\n  $('Weather request').first().json || {};\n\n\n// ------------------------------------------------------------\n// Recovery Agent output\n// ------------------------------------------------------------\n\nconst recovery =\n  recoveryRaw.output ||\n  recoveryRaw;\n\n\n// ------------------------------------------------------------\n// DELAY\n// ------------------------------------------------------------\n\nconst calculatedDelay =\n  Number(\n    flightData.calculated_delay_minutes\n  );\n\nconst recoveryDelay =\n  Number(\n    recovery.delay_minutes\n  );\n\nlet delayMinutes = 0;\n\nif (!Number.isNaN(calculatedDelay)) {\n  delayMinutes = calculatedDelay;\n}\nelse if (!Number.isNaN(recoveryDelay)) {\n  delayMinutes = recoveryDelay;\n}\n\n\n// ------------------------------------------------------------\n// Delay severity\n// ------------------------------------------------------------\n\nlet delaySeverity = 'ON TIME';\n\nif (delayMinutes >= 120) {\n  delaySeverity = 'MAJOR';\n}\nelse if (delayMinutes >= 60) {\n  delaySeverity = 'SIGNIFICANT';\n}\nelse if (delayMinutes > 0) {\n  delaySeverity = 'MINOR';\n}\n\n\n// ------------------------------------------------------------\n// Operational priority\n// ------------------------------------------------------------\n\nlet operationalPriority = 'LOW';\n\nif (delayMinutes >= 120) {\n  operationalPriority = 'HIGH';\n}\nelse if (delayMinutes >= 60) {\n  operationalPriority = 'MEDIUM';\n}\n\n\n// ------------------------------------------------------------\n// Weather\n// ------------------------------------------------------------\n\nconst current =\n  weatherData.current || {};\n\nconst location =\n  weatherData.location || {};\n\n\n// ------------------------------------------------------------\n// Recovery\n// ------------------------------------------------------------\n\nconst recoveryRequired =\n  recovery.recovery_required === true;\n\nconst recoveryActions =\n  Array.isArray(\n    recovery.recovery_actions\n  )\n    ? recovery.recovery_actions\n    : [];\n\nconst passengerCommunicationRequired =\n  recovery.passenger_communication_required === true;\n\nconst passengerMessage =\n  recovery.passenger_message ||\n  'Not available';\n\nconst operationsMessage =\n  recovery.operations_message ||\n  'Not available';\n\n\n// ------------------------------------------------------------\n// Ground operations data\n// ------------------------------------------------------------\n\nreturn [\n  {\n    json: {\n\n      flight: {\n\n        flight_number:\n          flightData.flight_number ||\n          recovery.flight_number ||\n          'Not available',\n\n        flight_status:\n          flightData.flight_status ||\n          recovery.flight_status ||\n          'Not available',\n\n        flight_date:\n          flightData.flight_date ||\n          recovery.flight_date ||\n          'Not available',\n\n        departure_airport:\n          flightData.departure?.iata ||\n          recovery.departure_airport ||\n          'Not available',\n\n        arrival_airport:\n          flightData.arrival?.iata ||\n          recovery.arrival_airport ||\n          'Not available',\n\n        scheduled_departure:\n          flightData.departure?.scheduled ||\n          recovery.scheduled_departure ||\n          'Not available',\n\n        estimated_departure:\n          flightData.departure?.estimated ||\n          'Not available',\n\n        actual_departure:\n          flightData.departure?.actual ||\n          recovery.actual_departure ||\n          'Not available',\n\n        scheduled_arrival:\n          flightData.arrival?.scheduled ||\n          'Not available',\n\n        estimated_arrival:\n          flightData.arrival?.estimated ||\n          'Not available',\n\n        actual_arrival:\n          flightData.arrival?.actual ||\n          'Not available'\n      },\n\n\n      delay: {\n\n        delay_minutes:\n          delayMinutes,\n\n        severity:\n          delaySeverity,\n\n        operational_priority:\n          operationalPriority\n      },\n\n\n      weather: {\n\n        airport:\n          flightData.arrival?.iata ||\n          'Not available',\n\n        location:\n          location.name ||\n          'Not available',\n\n        condition:\n          current.condition?.text ||\n          'Not available',\n\n        temperature_c:\n          current.temp_c ??\n          null,\n\n        wind_kph:\n          current.wind_kph ??\n          null,\n\n        wind_direction:\n          current.wind_dir ||\n          'Not available',\n\n        visibility_km:\n          current.vis_km ??\n          null,\n\n        last_updated:\n          current.last_updated ||\n          'Not available'\n      },\n\n\n      recovery: {\n\n        required:\n          recoveryRequired,\n\n        actions:\n          recoveryActions,\n\n        passenger_communication_required:\n          passengerCommunicationRequired,\n\n        passenger_message:\n          passengerMessage,\n\n        operations_message:\n          operationsMessage\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4160,
+        608
+      ],
+      "id": "0c705739-be40-484d-9119-7bf4fd3b2ad0",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are the SkyMind Ground Operations Reporting Agent.\n\nYour output is intended for AIRPORT GROUND STAFF.\n\nGenerate a concise operational status report.\n\n============================================================\nFLIGHT\n============================================================\n\nFlight Number:\n{{ $json.flight.flight_number }}\n\nFlight Date:\n{{ $json.flight.flight_date }}\n\nFlight Status:\n{{ $json.flight.flight_status }}\n\nDeparture:\n{{ $json.flight.departure_airport }}\n\nArrival:\n{{ $json.flight.arrival_airport }}\n\nScheduled Departure:\n{{ $json.flight.scheduled_departure }}\n\nEstimated Departure:\n{{ $json.flight.estimated_departure }}\n\nActual Departure:\n{{ $json.flight.actual_departure }}\n\nScheduled Arrival:\n{{ $json.flight.scheduled_arrival }}\n\nEstimated Arrival:\n{{ $json.flight.estimated_arrival }}\n\nActual Arrival:\n{{ $json.flight.actual_arrival }}\n\n============================================================\nDELAY\n============================================================\n\nDelay:\n{{ $json.delay.delay_minutes }} minutes\n\nSeverity:\n{{ $json.delay.severity }}\n\nOperational Priority:\n{{ $json.delay.operational_priority }}\n\n============================================================\nWEATHER\n============================================================\n\nCondition:\n{{ $json.weather.condition }}\n\nTemperature:\n{{ $json.weather.temperature_c }} °C\n\nWind:\n{{ $json.weather.wind_kph }} km/h\n\nWind Direction:\n{{ $json.weather.wind_direction }}\n\nVisibility:\n{{ $json.weather.visibility_km }} km\n\n============================================================\nRECOVERY\n============================================================\n\nRecovery Required:\n{{ $json.recovery.required }}\n\nRecovery Actions:\n{{ JSON.stringify($json.recovery.actions) }}\n\nPassenger Communication Required:\n{{ $json.recovery.passenger_communication_required }}\n\nPassenger Message:\n{{ $json.recovery.passenger_message }}\n\nOperations Message:\n{{ $json.recovery.operations_message }}\n\n============================================================\nINSTRUCTIONS\n============================================================\n\n1. This report is for ground staff.\n\n2. Clearly state the current flight status.\n\n3. Clearly state the delay in minutes.\n\n4. Never change the delay value.\n\n5. Never invent a delay cause.\n\n6. Mention weather conditions when available.\n\n7. Mention recovery actions when recovery is required.\n\n8. Mention that passenger communication is required when applicable.\n\n9. Do not invent passenger numbers.\n\n10. Do not invent operational information.\n\n11. If information is unavailable, say \"Not available\".\n\n12. Keep the report concise and operationally useful.\n\n============================================================\nOUTPUT FORMAT\n============================================================\n\n| Field | Status |\n|---|---|\n| Flight | [flight number] |\n| Flight Date | [flight date] |\n| Flight Status | [flight status] |\n| Departure | [departure] |\n| Arrival | [arrival] |\n| Scheduled Departure | [scheduled departure] |\n| Estimated Departure | [estimated departure] |\n| Delay | [delay minutes] minutes |\n| Delay Severity | [severity] |\n| Operational Priority | [priority] |\n| Weather | [weather condition] |\n| Recovery Required | [true/false] |\n| Passenger Communication | [true/false] |\n\n### Ground Staff Instructions\n\n- [instruction 1]\n- [instruction 2]\n- [instruction 3]\n\nReturn ONLY this format.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are SkyMind, an Airline Operations Control Assistant.\n\nYour job is to convert structured flight-operational information into a concise ground-operations report for airline ground staff.\n\nFollow the operational status provided in the input.\n\nYou must distinguish between:\n\n1. NORMAL / ON-TIME OPERATIONS\n2. DELAYED OPERATIONS\n3. CANCELLED OPERATIONS\n\nFor ON-TIME flights:\n- Treat the operation as normal.\n- Provide routine readiness and safe dispatch instructions.\n- Do not create unnecessary escalation.\n\nFor DELAYED flights:\n- Recommend actions to minimize further delay.\n- Focus on aircraft turnaround, crew, fueling, baggage/cargo, gate, boarding and operational coordination as applicable.\n- Continue monitoring.\n\nFor CANCELLED flights:\n- Identify the cancellation reason when available.\n- Recommend passenger communication, rebooking and applicable care/accommodation measures.\n- Recommend coordination with baggage/ground handling.\n- Escalate to the appropriate operations/control team.\n\nNever state that an action has already occurred unless the input explicitly confirms it.\n\nNever invent passenger details, operational facts or weather conditions.\n\nUse professional airline ground-operations terminology.\n\nThe final response must follow the exact Markdown table structure requested by the user message.\n\nPASSENGER AND CONNECTION INFORMATION\n\nDo NOT output:\n- Passenger names\n- Passenger IDs\n- Passenger emails\n- Individual passenger records\n- Any personally identifiable passenger information\n\nYou MAY output only aggregate operational information:\n\n1. Passenger Count\n   - Report the total passenger count when available.\n   - If unavailable, write \"Not reported\".\n\n2. Connection Status\n   - Report connecting-flight information when available.\n   - Include the number of passengers affected only if that number is available.\n   - Do not identify individual passengers.\n   - If no connection information is available, write \"No connection information reported\".\n\nThe output MUST contain these fields:\n\n| Passenger Count | ... |\n| Connection Status | ... |"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        4400,
+        608
+      ],
+      "id": "0de9ff7b-37b4-46f5-9440-c12867a90c8a",
+      "name": "Basic LLM Chain2"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "=Flight {{ $json.flight_number }} – Delay and Passenger Assistance",
+        "message": "=<p>Dear {{ $json.passenger_name }},</p>\n\n<p>We regret to inform you that flight <strong>{{ $json.flight_number }}</strong> has been significantly delayed.</p>\n\n<p>We understand that this disruption may affect your travel plans and any connecting flight you may have.</p>\n\n<p><strong>Your travel details:</strong></p>\n\n<ul>\n<li><strong>Flight:</strong> {{ $json.flight_number }}</li>\n<li><strong>Travel Date:</strong> {{ $json.flight_date }}</li>\n<li><strong>Passenger:</strong> {{ $json.passenger_name }}</li>\n<li><strong>Connecting Flight:</strong> {{ $json.connecting_flight }}</li>\n<li><strong>Connection Status:</strong> {{ $json.connection_status }}</li>\n</ul>\n\n<p>Our passenger assistance team will support you with applicable rebooking, connection assistance, or other available options.</p>\n\n<p>We sincerely apologize for the inconvenience and appreciate your patience.</p>\n\n<p>Regards,<br>\nSkyMind Airline Operations</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        4336,
+        288
+      ],
+      "id": "bbdbad28-7a1a-4ffc-8896-34f903d8227b",
+      "name": "Passenger Notification",
+      "webhookId": "dc787805-0f50-4126-adb6-5205e2211c2c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "anutzzJFrILN6930",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// SkyMind - Final Ground Staff Response\n// ============================================================\n\nconst groundData =\n  $('Code in JavaScript').first().json || {};\n\nconst llmData =\n  $input.first().json || {};\n\n\n// ------------------------------------------------------------\n// Delay\n// ------------------------------------------------------------\n\nconst delayMinutes =\n  Math.max(\n    0,\n    Number(\n      groundData.delay?.delay_minutes\n    ) || 0\n  );\n\n\n// ------------------------------------------------------------\n// Severity\n// ------------------------------------------------------------\n\nlet severity = 'ON TIME';\n\nif (delayMinutes >= 120) {\n  severity = 'MAJOR';\n}\nelse if (delayMinutes >= 60) {\n  severity = 'SIGNIFICANT';\n}\nelse if (delayMinutes > 0) {\n  severity = 'MINOR';\n}\n\n\n// ------------------------------------------------------------\n// Priority\n// ------------------------------------------------------------\n\nlet priority = 'LOW';\n\nif (delayMinutes >= 120) {\n  priority = 'HIGH';\n}\nelse if (delayMinutes >= 60) {\n  priority = 'MEDIUM';\n}\n\n\n// ------------------------------------------------------------\n// Final response\n// ------------------------------------------------------------\n\nreturn [\n  {\n    json: {\n\n      success: true,\n\n      audience: 'GROUND_STAFF',\n\n      flight_number:\n        groundData.flight?.flight_number ||\n        'Not available',\n\n      flight_status:\n        groundData.flight?.flight_status ||\n        'Not available',\n\n      flight_date:\n        groundData.flight?.flight_date ||\n        'Not available',\n\n      departure_airport:\n        groundData.flight?.departure_airport ||\n        'Not available',\n\n      arrival_airport:\n        groundData.flight?.arrival_airport ||\n        'Not available',\n\n      scheduled_departure:\n        groundData.flight?.scheduled_departure ||\n        'Not available',\n\n      estimated_departure:\n        groundData.flight?.estimated_departure ||\n        'Not available',\n\n      actual_departure:\n        groundData.flight?.actual_departure ||\n        'Not available',\n\n      scheduled_arrival:\n        groundData.flight?.scheduled_arrival ||\n        'Not available',\n\n      estimated_arrival:\n        groundData.flight?.estimated_arrival ||\n        'Not available',\n\n      actual_arrival:\n        groundData.flight?.actual_arrival ||\n        'Not available',\n\n      delay_minutes:\n        delayMinutes,\n\n      delay_severity:\n        severity,\n\n      operational_priority:\n        priority,\n\n      weather:\n        groundData.weather || {},\n\n      recovery:\n        groundData.recovery || {},\n\n      ground_staff_report:\n        llmData.text ||\n        llmData.output ||\n        'Ground operations report generated successfully.'\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4720,
+        608
+      ],
+      "id": "ea6edd36-8d3d-4666-85a3-232048f1ff4a",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "formTitle": "SkyMind Airline Operations Control",
+        "formDescription": "Enter a flight number and select the information you want SkyMind to analyze.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Flight Number",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "What do you want to know?",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Flight Status"
+                  },
+                  {
+                    "option": "Flight Delay"
+                  },
+                  {
+                    "option": "Weather Impact"
+                  },
+                  {
+                    "option": "Flight + Weather Analysis"
+                  },
+                  {
+                    "option": "Ground Operations"
+                  },
+                  {
+                    "option": "Passenger Information"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {
+          "respondWithOptions": {
+            "values": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -1440,
+        320
+      ],
+      "id": "72c2fc26-44d4-45fe-8134-3f22299e9bf6",
+      "name": "On form submission",
+      "webhookId": "75a48583-d71f-483b-9994-bf675d0795f5"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// SkyMind - Flight Request Preparation\n// ============================================================\n\nconst body = $('Webhook').first().json.body || {};\n\nconst flightNumber = String(\n  body.flight_number || ''\n)\n  .trim()\n  .toUpperCase()\n  .replace(/\\s+/g, '');\n\nif (!flightNumber) {\n  throw new Error('Flight number is required.');\n}\n\nreturn [\n  {\n    json: {\n      success: true,\n\n      requested_flight: flightNumber,\n\n      original_request: body,\n\n      aviationstack_query: {\n        flight_iata: flightNumber\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -272,
+        416
+      ],
+      "id": "ea943039-9f8a-4cb8-b7a3-7297a6f6997f",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// SkyMind - Prepare Flight Data\n// ============================================================\n\nconst apiResponse = $input.first().json;\n\nconst requestedFlight =\n  $('Code in JavaScript2').first().json.requested_flight;\n\n// ------------------------------------------------------------\n// Aviationstack response\n// ------------------------------------------------------------\n\nconst flight =\n  apiResponse?.data?.[0];\n\nif (!flight) {\n  throw new Error(\n    `No flight data returned for ${requestedFlight}.`\n  );\n}\n\n// ------------------------------------------------------------\n// Helper\n// ------------------------------------------------------------\n\nfunction clean(value) {\n  return (\n    value !== null &&\n    value !== undefined &&\n    value !== ''\n  )\n    ? value\n    : null;\n}\n\n// ------------------------------------------------------------\n// Flight\n// ------------------------------------------------------------\n\nconst flightNumber =\n  flight.flight?.iata ||\n  requestedFlight;\n\nconst flightStatus =\n  flight.flight_status ||\n  'unknown';\n\nconst flightDate =\n  flight.flight_date ||\n  null;\n\n// ------------------------------------------------------------\n// Departure\n// ------------------------------------------------------------\n\nconst scheduledDeparture =\n  clean(\n    flight.departure?.scheduled\n  );\n\nconst estimatedDeparture =\n  clean(\n    flight.departure?.estimated\n  );\n\nconst actualDeparture =\n  clean(\n    flight.departure?.actual\n  );\n\nconst departureDelay =\n  flight.departure?.delay !== null &&\n  flight.departure?.delay !== undefined\n    ? Number(flight.departure.delay)\n    : null;\n\n// ------------------------------------------------------------\n// Arrival\n// ------------------------------------------------------------\n\nconst scheduledArrival =\n  clean(\n    flight.arrival?.scheduled\n  );\n\nconst estimatedArrival =\n  clean(\n    flight.arrival?.estimated\n  );\n\nconst actualArrival =\n  clean(\n    flight.arrival?.actual\n  );\n\nconst arrivalDelay =\n  flight.arrival?.delay !== null &&\n  flight.arrival?.delay !== undefined\n    ? Number(flight.arrival.delay)\n    : null;\n\n// ------------------------------------------------------------\n// Delay calculation\n//\n// Priority:\n// 1. Actual - Scheduled\n// 2. Estimated - Scheduled\n// 3. Aviationstack delay\n// ------------------------------------------------------------\n\nfunction getTimestamp(value) {\n\n  if (!value) {\n    return NaN;\n  }\n\n  const timestamp =\n    new Date(value).getTime();\n\n  return timestamp;\n}\n\nfunction calculateDelay(\n  scheduled,\n  estimated,\n  actual,\n  apiDelay\n) {\n\n  const scheduledTime =\n    getTimestamp(scheduled);\n\n  const estimatedTime =\n    getTimestamp(estimated);\n\n  const actualTime =\n    getTimestamp(actual);\n\n  // ----------------------------------------------------------\n  // ACTUAL departure\n  // ----------------------------------------------------------\n\n  if (\n    !Number.isNaN(scheduledTime) &&\n    !Number.isNaN(actualTime)\n  ) {\n\n    return Math.max(\n      0,\n      Math.round(\n        (actualTime - scheduledTime) / 60000\n      )\n    );\n  }\n\n  // ----------------------------------------------------------\n  // ESTIMATED departure\n  // ----------------------------------------------------------\n\n  if (\n    !Number.isNaN(scheduledTime) &&\n    !Number.isNaN(estimatedTime)\n  ) {\n\n    return Math.max(\n      0,\n      Math.round(\n        (estimatedTime - scheduledTime) / 60000\n      )\n    );\n  }\n\n  // ----------------------------------------------------------\n  // Aviationstack delay\n  // ----------------------------------------------------------\n\n  if (\n    apiDelay !== null &&\n    !Number.isNaN(Number(apiDelay))\n  ) {\n\n    return Math.max(\n      0,\n      Math.round(Number(apiDelay))\n    );\n  }\n\n  return 0;\n}\n\nconst calculatedDelay =\n  calculateDelay(\n    scheduledDeparture,\n    estimatedDeparture,\n    actualDeparture,\n    departureDelay\n  );\n\n// ------------------------------------------------------------\n// Delay severity\n// ------------------------------------------------------------\n\nlet delaySeverity = 'ON TIME';\n\nif (calculatedDelay >= 120) {\n  delaySeverity = 'MAJOR';\n}\nelse if (calculatedDelay >= 60) {\n  delaySeverity = 'SIGNIFICANT';\n}\nelse if (calculatedDelay > 0) {\n  delaySeverity = 'MINOR';\n}\n\n// ------------------------------------------------------------\n// Aircraft\n// ------------------------------------------------------------\n\nconst aircraft = {\n  registration:\n    flight.aircraft?.registration || null,\n\n  iata:\n    flight.aircraft?.iata || null,\n\n  icao:\n    flight.aircraft?.icao || null\n};\n\n// ------------------------------------------------------------\n// Final output\n// ------------------------------------------------------------\n\nreturn [\n  {\n    json: {\n\n      success: true,\n\n      flight_number:\n        flightNumber,\n\n      flight_status:\n        flightStatus,\n\n      flight_date:\n        flightDate,\n\n      airline: {\n        name:\n          flight.airline?.name || null,\n\n        iata:\n          flight.airline?.iata || null,\n\n        icao:\n          flight.airline?.icao || null\n      },\n\n      aircraft,\n\n      departure: {\n\n        airport:\n          flight.departure?.airport || null,\n\n        iata:\n          flight.departure?.iata || null,\n\n        terminal:\n          flight.departure?.terminal || null,\n\n        gate:\n          flight.departure?.gate || null,\n\n        scheduled:\n          scheduledDeparture,\n\n        estimated:\n          estimatedDeparture,\n\n        actual:\n          actualDeparture,\n\n        delayMinutes:\n          departureDelay\n      },\n\n      arrival: {\n\n        airport:\n          flight.arrival?.airport || null,\n\n        iata:\n          flight.arrival?.iata || null,\n\n        terminal:\n          flight.arrival?.terminal || null,\n\n        gate:\n          flight.arrival?.gate || null,\n\n        scheduled:\n          scheduledArrival,\n\n        estimated:\n          estimatedArrival,\n\n        actual:\n          actualArrival,\n\n        delayMinutes:\n          arrivalDelay\n      },\n\n      calculated_delay_minutes:\n        calculatedDelay,\n\n      delay_severity:\n        delaySeverity,\n\n      recommended_action:\n        calculatedDelay >= 120\n          ? 'Major delay - recovery assessment required'\n          : calculatedDelay >= 60\n            ? 'Significant delay - monitor and assess recovery'\n            : calculatedDelay > 0\n              ? 'Minor delay - continue monitoring'\n              : 'Normal operations',\n\n      debug: {\n\n        scheduled_departure:\n          scheduledDeparture,\n\n        estimated_departure:\n          estimatedDeparture,\n\n        actual_departure:\n          actualDeparture,\n\n        aviationstack_delay:\n          departureDelay,\n\n        calculated_delay_minutes:\n          calculatedDelay\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        608
+      ],
+      "id": "67728f7a-5e16-4bac-8b98-790bc6b70e24",
+      "name": "Prepare Flight Data"
+    },
+    {
+      "parameters": {
+        "url": "https://api.weatherapi.com/v1/current.json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "0a2730e860974dfc8d8152339262809"
+            },
+            {
+              "name": "q",
+              "value": "={{ 'iata:' + $('Prepare Flight Data').first().json.arrival.iata }}"
+            },
+            {
+              "name": "aqi",
+              "value": "no"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        944,
+        768
+      ],
+      "id": "36b38b3a-0fba-450a-b84c-074980fa1982",
+      "name": "Weather request"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are the Recovery Decision Agent for SkyMind Airline Operations Control.\n\nAnalyze the flight data and weather data provided below.\n\n============================================================\nFLIGHT DATA\n============================================================\n\n{{ JSON.stringify($('Prepare Flight Data').first().json, null, 2) }}\n\n============================================================\nWEATHER DATA\n============================================================\n\n{{ JSON.stringify($('Weather request').first().json, null, 2) }}\n\n============================================================\nRULES\n============================================================\n\n1. Use ONLY the information provided in the flight and weather data.\n\n2. Never invent missing information.\n\n3. If information is unavailable, use \"Not available\".\n\n4. Never assume the cause of a delay.\n\n5. If a flight is delayed and no cause is explicitly provided, set:\ndelay_cause = \"Unknown\"\n\n6. Use calculated_delay_minutes from Prepare Flight Data whenever available.\n\n7. Do NOT replace calculated_delay_minutes with another delay value.\n\n8. If calculated_delay_minutes is available, copy it exactly into:\ndelay_minutes\n\n9. Report the actual weather conditions from WeatherAPI.\n\n10. Do not claim that weather caused a delay unless the provided data explicitly supports this.\n\n11. Weather conditions alone do not automatically mean recovery is required.\n\n12. Technical problems may only be reported if explicitly present in the input.\n\n13. If recovery is not required:\nrecovery_required = false\n\n14. If recovery_required is false:\nrecovery_actions = []\n\n15. Use true or false for Boolean fields.\n\n16. delay_minutes must be a number.\n\n17. Keep passenger_message concise and factual.\n\n18. Keep operations_message concise and factual.\n\n19. Do not invent passenger counts.\n\n20. Do not invent airport information.\n\n21. Do not invent flight information.\n\n22. Do not use Markdown.\n\n23. Do not add explanations outside the structured output.\n\n24. Return only the required fields.\n\n============================================================\nDELAY CALCULATION\n============================================================\n\nThe flight data has already calculated the delay.\n\nUse:\n\ncalculated_delay_minutes\n\nas the authoritative delay value.\n\nDo not recalculate it unless it is unavailable.\n\n============================================================\nOUTPUT\n============================================================\n\nReturn exactly the required structured output format.",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are the Recovery Decision Agent for SkyMind Airline Operations Control.\n\nYour responsibility is to analyze flight operational data and weather data and determine whether any recovery action is required.\n\nFollow these rules strictly:\n\n1. Use only the data provided to you.\n2. Never invent missing information.\n3. Never assume the cause of a delay.\n4. If a delay exists but its cause is not provided, identify the cause as \"unknown\".\n5. Consider the flight status before recommending recovery actions.\n6. If the flight has landed normally, passenger recovery actions are generally not required unless the input explicitly indicates otherwise.\n7. Consider weather operationally only when the provided weather conditions indicate a meaningful impact.\n8. Technical problems may only be identified when explicitly present in the input.\n9. Separate operational facts from recommended actions.\n10. Produce concise, operationally useful decisions.\n11. Follow the required output schema exactly.\n\nThe output must also preserve the following flight details exactly from the provided input:\n\n- flight_number\n- flight_date\n- departure_airport\n- arrival_airport\n- scheduled_departure\n- actual_departure\n- delay_minutes\n\nDo not modify, infer, or replace these values.\n\nIf recovery_required is false, recovery_actions must be an empty array.\n\nRoutine operational activities such as recording flight times, closing the flight record, or routine monitoring must NOT be placed in recovery_actions. Put those activities in operations_message instead.\n\nRecovery actions should only contain actions such as:\n- passenger rebooking\n- passenger cancellation handling\n- passenger refreshments\n- special assistance\n- alternative transportation\n- other direct passenger recovery measures"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1792,
+        576
+      ],
+      "id": "8d8c8488-7a86-4cdf-9cb0-a71d0dc0c1b2",
+      "name": "Recovery Agent"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "skymind/flight-analysis",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -496,
+        608
+      ],
+      "id": "4b71ce82-be4c-4ff2-a486-8a5358dccd08",
+      "name": "Webhook",
+      "webhookId": "8610dfb5-28ea-48db-9fe8-a8b2ba19d71f"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        4976,
+        416
+      ],
+      "id": "7991ef5d-a5cc-43ba-b793-6ee01294817e",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "url": "https://api.aviationstack.com/v1/flights",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "access_key",
+              "value": "1d71899ceeb12c8802d6d93f3f373e2b"
+            },
+            {
+              "name": "=flight_iata",
+              "value": "={{ $('Code in JavaScript2').first().json.requested_flight }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        32,
+        608
+      ],
+      "id": "1605aa6a-f541-4678-84d8-a5b8e05baf45",
+      "name": "Aviationstack API"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Recovery Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Recovery Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Recovery Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Delay Assessment",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Normal Operations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delay Assessment": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Normal Operations",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Escalation Assessment",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Basic LLM Chain2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Escalation Assessment",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Normal Operations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser3": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Normal Operations",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Escalation Assessment": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Passenger Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Passenger Notification": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normal Operations": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Aviationstack API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Flight Data": {
+      "main": [
+        [
+          {
+            "node": "Weather request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weather request": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Recovery Agent": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aviationstack API": {
+      "main": [
+        [
+          {
+            "node": "Prepare Flight Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "2aec4d47-45dd-4ed6-bca7-a74705176865",
+  "meta": {
+    "instanceId": "64ba19d02419d930cde241839ea0cb1cf8e9ac36e6fd15b518e160118a8a6baa"
+  },
+  "nodeGroups": [],
+  "id": "Z9kslFWG6SDqHo9n",
+  "tags": []
+}
