@@ -1,0 +1,10 @@
+Estimate a practical travel budget based on the user's request.
+
+User request:
+{{ $json.chatInput }}
+
+Provide estimated costs for transport, accommodation, food,
+local travel and activities. Calculate the total for the group,
+check it against the user's budget, and suggest savings if needed.
+
+Clearly label all costs as estimates.

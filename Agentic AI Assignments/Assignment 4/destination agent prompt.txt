@@ -1,0 +1,8 @@
+Analyze the user's travel request and recommend suitable
+destinations, attractions, activities, and local food.
+
+User request:
+{{ $json.chatInput }}
+
+Return a structured day-wise sightseeing plan.
+State assumptions and do not claim to have live booking data.
